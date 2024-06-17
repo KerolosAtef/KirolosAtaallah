@@ -11,8 +11,9 @@ locale                   : "en-US"
 title                    : "Kirolos Ataallah"
 title_separator          : "-"
 name                     : &name "Kirolos Ataallah"
-description              : &description "personal description"
-url                      : https://academicpages.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
+description              : &description "Experienced Computer Vision Engineer specializing in Vision Language Models (VLM) adept at analyzing both images
+and videos. Possessing a robust background in the sports industry, particularly in football match analysis. A selfmotivated individual with an insatiable thirst for learning, constantly seeking out new challenges to conquer."
+url                      : https://kirolosataallah.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "academicpages/academicpages.github.io"
 
