@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favicon Generator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .favicon-preview { display: inline-block; margin: 10px; text-align: center; }
+        .favicon-preview canvas { border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Favicon Generator for Kirolos Ataallah</h1>
+    <p>This page will help you generate favicon files from the SVG design.</p>
+    
+    <div class="favicon-preview">
+        <h3>16x16 Favicon</h3>
+        <canvas id="favicon16" width="16" height="16"></canvas>
+    </div>
+    
+    <div class="favicon-preview">
+        <h3>32x32 Favicon</h3>
+        <canvas id="favicon32" width="32" height="32"></canvas>
+    </div>
+    
+    <div class="favicon-preview">
+        <h3>180x180 Apple Touch Icon</h3>
+        <canvas id="favicon180" width="180" height="180"></canvas>
+    </div>
+    
+    <script>
+        // Function to draw favicon on canvas
+        function drawFavicon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const radius = size / 2 - 1;
+            
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw background circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw border
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw neural network pattern (simplified for small sizes)
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.9;
+            
+            // Central node
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size * 0.08, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Surrounding nodes (fewer for smaller sizes)
+            const nodeRadius = size * 0.05;
+            const nodePositions = [
+                [centerX - size * 0.25, centerY - size * 0.25],
+                [centerX + size * 0.25, centerY - size * 0.25],
+                [centerX - size * 0.3, centerY],
+                [centerX + size * 0.3, centerY],
+                [centerX - size * 0.25, centerY + size * 0.25],
+                [centerX + size * 0.25, centerY + size * 0.25]
+            ];
+            
+            nodePositions.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, nodeRadius, 0, 2 * Math.PI);
+                ctx.fill();
+                
+                // Draw connections to center
+                ctx.globalAlpha = 0.6;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = size > 32 ? 1 : 0.5;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.globalAlpha = 0.9;
+            });
+            
+            // Draw "K" in the center (only for larger sizes)
+            if (size >= 32) {
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = 0.8;
+                ctx.font = `bold ${size * 0.25}px Arial, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('K', centerX, centerY + size * 0.02);
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+        
+        // Generate favicons
+        drawFavicon(document.getElementById('favicon16'), 16);
+        drawFavicon(document.getElementById('favicon32'), 32);
+        drawFavicon(document.getElementById('favicon180'), 180);
+        
+        // Function to download canvas as PNG
+        function downloadCanvas(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Add download buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const previews = document.querySelectorAll('.favicon-preview');
+            previews.forEach((preview, index) => {
+                const button = document.createElement('button');
+                const sizes = ['16', '32', '180'];
+                const filenames = ['favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png'];
+                button.textContent = 'Download PNG';
+                button.onclick = () => downloadCanvas(`favicon${sizes[index]}`, filenames[index]);
+                preview.appendChild(button);
+            });
+        });
+    </script>
+</body>
+</html>
