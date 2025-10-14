@@ -543,9 +543,10 @@ section {
     left: 30px;
     top: 0;
     height: 100%;
-    width: 3px;
-    background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+    width: 4px;
+    background: #2563eb;
     border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
 }
 
 .education-item {
@@ -557,13 +558,15 @@ section {
 .education-item::before {
     content: '';
     position: absolute;
-    left: 18px;
+    left: 17px;
     top: 10px;
-    width: 24px;
-    height: 24px;
-    background: var(--primary);
+    width: 26px;
+    height: 26px;
+    background: #2563eb;
     border-radius: 50%;
-    box-shadow: 0 0 0 4px var(--primary-light);
+    border: 4px solid #ffffff;
+    box-shadow: 0 0 0 2px #2563eb;
+    z-index: 2;
 }
 
 .education-year {
@@ -572,12 +575,13 @@ section {
     top: 5px;
     font-weight: 700;
     font-size: 1.1rem;
-    color: var(--primary);
-    background: var(--primary-light);
+    color: #2563eb;
+    background: #f8fafc;
     padding: 8px 16px;
     border-radius: 20px;
-    border: 2px solid var(--primary);
+    border: 2px solid #2563eb;
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
 }
 
 .education-content {
