@@ -423,3 +423,90 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Fetch Google Scholar Statistics
+async function fetchGoogleScholarStats() {
+    try {
+        // Using Serpapi service (free tier available) to fetch Google Scholar data
+        // Alternative: You can use your own backend API or CORS proxy
+        const scholarId = '6gRlYHAAAAAJ'; // Your Google Scholar ID
+        
+        // Using a CORS proxy to fetch Google Scholar data
+        const proxyUrl = 'https://api.allorigins.win/raw?url=';
+        const scholarUrl = `https://scholar.google.com/citations?user=${scholarId}&hl=en`;
+        
+        const response = await fetch(proxyUrl + encodeURIComponent(scholarUrl));
+        const html = await response.text();
+        
+        // Parse the HTML to extract citations and publications
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Extract citation count
+        const citationElements = doc.querySelectorAll('#gsc_rsb_st td.gsc_rsb_std');
+        let totalCitations = 0;
+        let hIndex = 0;
+        let i10Index = 0;
+        
+        if (citationElements.length >= 3) {
+            totalCitations = parseInt(citationElements[0].textContent.replace(/,/g, '')) || 0;
+            hIndex = parseInt(citationElements[2].textContent) || 0;
+            i10Index = parseInt(citationElements[4].textContent) || 0;
+        }
+        
+        // Count publications
+        const publications = doc.querySelectorAll('.gsc_a_tr');
+        const publicationCount = publications.length || 3; // Fallback to 3 if can't fetch
+        
+        // Update the stats on the page
+        updateStats(totalCitations, publicationCount, hIndex, i10Index);
+        
+        return { totalCitations, publicationCount, hIndex, i10Index };
+        
+    } catch (error) {
+        console.error('Error fetching Google Scholar stats:', error);
+        // Use fallback values if fetch fails
+        updateStats(null, 3, null, null); // Keep published papers at 3 as fallback
+        return null;
+    }
+}
+
+function updateStats(citations, publications, hIndex, i10Index) {
+    const statItems = document.querySelectorAll('.stat-item');
+    
+    if (statItems.length >= 4) {
+        // Update Published Papers (2nd stat)
+        if (publications) {
+            statItems[1].querySelector('h3').textContent = publications.toString();
+        }
+        
+        // Optionally: Replace "AWS Certifications" with "Total Citations"
+        if (citations && citations > 0) {
+            statItems[3].querySelector('h3').textContent = citations.toLocaleString();
+            statItems[3].querySelector('p').textContent = 'Total Citations';
+            statItems[3].title = `h-index: ${hIndex}, i10-index: ${i10Index}`;
+        }
+    }
+}
+
+// Alternative: Use a simpler approach with manual fallback
+async function fetchScholarStatsSimple() {
+    try {
+        // Try to fetch from a JSON file that you can update periodically
+        const response = await fetch('scholar-stats.json');
+        const data = await response.json();
+        updateStats(data.citations, data.publications, data.hIndex, data.i10Index);
+    } catch (error) {
+        console.log('Using static values for scholar stats');
+        // Keep current static values if fetch fails
+    }
+}
+
+// Initialize Scholar Stats on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Try to fetch live data
+    fetchGoogleScholarStats();
+    
+    // Alternative: Use the simple JSON approach
+    // fetchScholarStatsSimple();
+});
