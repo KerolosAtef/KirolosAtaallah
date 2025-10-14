@@ -1,4 +1,18 @@
 /* Reset and Base Styles */
+:root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --secondary: #10b981;
+    --accent: #f59e0b;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --white: #ffffff;
+    --black: #000000;
+    --bg-light: #f8fafc;
+    --border: #e2e8f0;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
