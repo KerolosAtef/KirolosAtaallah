@@ -14,13 +14,21 @@ import json
 import sys
 from datetime import datetime
 
+# Always import all dependencies
 try:
     from scholarly import scholarly
     USE_SCHOLARLY = True
 except ImportError:
     USE_SCHOLARLY = False
+    print("Warning: scholarly library not available")
+
+try:
     import requests
     from bs4 import BeautifulSoup
+    USE_REQUESTS = True
+except ImportError:
+    USE_REQUESTS = False
+    print("Warning: requests/beautifulsoup4 not available")
 
 def fetch_stats_with_scholarly(author_id):
     """Fetch stats using the scholarly library"""
@@ -95,7 +103,7 @@ def main():
         print("Using scholarly library...")
         stats = fetch_stats_with_scholarly(SCHOLAR_ID)
     
-    if not stats:
+    if not stats and USE_REQUESTS:
         print("Using web scraping method...")
         stats = fetch_stats_with_requests(SCHOLAR_ID)
     
@@ -111,8 +119,18 @@ def main():
         print(f"   i10-index: {stats['i10Index']}")
         print(f"   Last updated: {stats['lastUpdated']}")
     else:
-        print("❌ Failed to fetch scholar stats")
-        sys.exit(1)
+        print("⚠️ Failed to fetch new stats, keeping existing data")
+        # Check if existing file exists
+        try:
+            with open('scholar-stats.json', 'r') as f:
+                existing_stats = json.load(f)
+                print(f"   Existing stats from: {existing_stats.get('lastUpdated', 'unknown')}")
+                print("   Note: Stats were not updated this time")
+                # Exit with 0 to not fail the workflow when data already exists
+                sys.exit(0)
+        except FileNotFoundError:
+            print("❌ No existing stats file found and failed to fetch new data")
+            sys.exit(1)
 
 if __name__ == "__main__":
     main()
