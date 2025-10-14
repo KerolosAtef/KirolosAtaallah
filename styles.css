@@ -241,6 +241,35 @@ body {
     animation: fadeInRight 1s ease-out 0.5s both;
 }
 
+.profile-image {
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.profile-image:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.profile-photo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    transition: all 0.3s ease;
+}
+
 .image-placeholder {
     width: 300px;
     height: 300px;
@@ -902,6 +931,11 @@ section {
         text-align: center;
     }
 
+    .profile-image {
+        width: 250px;
+        height: 250px;
+    }
+
     .hero-title {
         font-size: 3rem;
     }
@@ -961,6 +995,11 @@ section {
 @media (max-width: 480px) {
     .hero-title {
         font-size: 2.5rem;
+    }
+
+    .profile-image {
+        width: 200px;
+        height: 200px;
     }
 
     .section-title {
