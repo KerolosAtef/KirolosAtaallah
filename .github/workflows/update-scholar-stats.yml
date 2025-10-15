@@ -37,6 +37,10 @@ jobs:
     - name: Update Scholar Stats
       id: update
       continue-on-error: true
+      env:
+        # Optional: Add ScraperAPI key if you have one (helps bypass 403 errors)
+        # SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
+        PYTHONUNBUFFERED: 1
       run: |
         echo "🔄 Fetching stats at $(date)"
         python update-scholar-stats.py
@@ -93,15 +97,24 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         
         if [ "${{ steps.update.outcome }}" == "success" ]; then
-          echo "✅ **Update Status:** Success" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Update Status:** Success - New data fetched" >> $GITHUB_STEP_SUMMARY
         else
-          echo "⚠️ **Update Status:** Failed (using existing data)" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ **Update Status:** Failed to fetch new data" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Note:** Google Scholar often blocks automated requests from GitHub Actions (403 Forbidden)." >> $GITHUB_STEP_SUMMARY
+          echo "This is expected behavior. The website continues to use existing data." >> $GITHUB_STEP_SUMMARY
         fi
         
         if [ -f scholar-stats.json ]; then
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Current Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Statistics (Displayed on Website)" >> $GITHUB_STEP_SUMMARY
           echo '```json' >> $GITHUB_STEP_SUMMARY
           cat scholar-stats.json >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
         fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "💡 **Tip:** If updates consistently fail, consider:" >> $GITHUB_STEP_SUMMARY
+        echo "- Running the script locally and committing the updated \`scholar-stats.json\`" >> $GITHUB_STEP_SUMMARY
+        echo "- Using a third-party API service (e.g., ScraperAPI) for more reliable access" >> $GITHUB_STEP_SUMMARY
