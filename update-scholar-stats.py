@@ -12,6 +12,8 @@ Requirements:
 
 import json
 import sys
+import time
+import random
 from datetime import datetime
 
 # Always import all dependencies
@@ -54,14 +56,20 @@ def fetch_stats_with_scholarly(author_id):
         return None
 
 def fetch_stats_with_requests(author_id):
-    """Fetch stats using web scraping"""
+    """Fetch stats using web scraping with better headers"""
     try:
         url = f"https://scholar.google.com/citations?user={author_id}&hl=en"
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
         }
         
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -96,15 +104,27 @@ def main():
     
     print("Fetching Google Scholar statistics...")
     
+    # Add random delay to avoid rate limiting (1-3 seconds)
+    delay = random.uniform(1, 3)
+    print(f"Waiting {delay:.1f} seconds to avoid rate limiting...")
+    time.sleep(delay)
+    
     # Try with scholarly library first, then fall back to web scraping
     stats = None
     
     if USE_SCHOLARLY:
         print("Using scholarly library...")
         stats = fetch_stats_with_scholarly(SCHOLAR_ID)
+        
+        # If failed, wait and try once more
+        if not stats:
+            print("First attempt failed, waiting 5 seconds and retrying...")
+            time.sleep(5)
+            stats = fetch_stats_with_scholarly(SCHOLAR_ID)
     
     if not stats and USE_REQUESTS:
         print("Using web scraping method...")
+        time.sleep(2)  # Wait before trying web scraping
         stats = fetch_stats_with_requests(SCHOLAR_ID)
     
     if stats:
