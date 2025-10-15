@@ -15,10 +15,14 @@ on:
 jobs:
   update-stats:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to commit and push changes
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -28,37 +32,76 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install scholarly beautifulsoup4 requests
+        pip install scholarly beautifulsoup4 requests lxml
         
     - name: Update Scholar Stats
       id: update
+      continue-on-error: true
       run: |
-        echo "Fetching stats at $(date)"
+        echo "🔄 Fetching stats at $(date)"
         python update-scholar-stats.py
-        echo "Stats updated successfully!"
+        echo "update_status=$?" >> $GITHUB_OUTPUT
         
     - name: Check for changes
       id: git-check
+      if: steps.update.outcome == 'success'
       run: |
-        git diff --exit-code scholar-stats.json || echo "changed=true" >> $GITHUB_OUTPUT
+        if git diff --quiet scholar-stats.json; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+          echo "ℹ️ No changes detected in scholar-stats.json"
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+          echo "📝 Changes detected in scholar-stats.json"
+        fi
         
     - name: Commit and push if changed
       if: steps.git-check.outputs.changed == 'true'
       run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git config --local user.name 'github-actions[bot]'
+        git config --local user.email 'github-actions[bot]@users.noreply.github.com'
         git add scholar-stats.json
-        git commit -m "Update Google Scholar statistics [automated] 🤖"
+        COMMIT_MSG="📊 Update Google Scholar statistics [automated]"
+        COMMIT_MSG="${COMMIT_MSG}\n\nUpdated at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+        COMMIT_MSG="${COMMIT_MSG}\nTriggered by: ${{ github.event_name }}"
+        git commit -m "${COMMIT_MSG}"
         git push
-        echo "✅ Changes committed and pushed!"
-        
-    - name: No changes detected
-      if: steps.git-check.outputs.changed != 'true'
-      run: |
-        echo "ℹ️ No changes in scholar stats"
+        echo "✅ Changes committed and pushed successfully!"
         
     - name: Display current stats
+      if: always()
       run: |
-        echo "=== Current Stats ==="
-        cat scholar-stats.json
-        echo "===================="
+        echo ""
+        echo "════════════════════════════════════════════════════"
+        echo "📊 Current Scholar Statistics"
+        echo "════════════════════════════════════════════════════"
+        if [ -f scholar-stats.json ]; then
+          cat scholar-stats.json
+        else
+          echo "⚠️ scholar-stats.json not found"
+        fi
+        echo "════════════════════════════════════════════════════"
+        echo ""
+        
+    - name: Workflow Summary
+      if: always()
+      run: |
+        echo "## 📊 Scholar Stats Update Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Workflow Run:** ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Time:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.update.outcome }}" == "success" ]; then
+          echo "✅ **Update Status:** Success" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Update Status:** Failed (using existing data)" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        if [ -f scholar-stats.json ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Current Statistics" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat scholar-stats.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
