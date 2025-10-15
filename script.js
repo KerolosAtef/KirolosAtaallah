@@ -476,37 +476,39 @@ function updateStats(citations, publications, hIndex, i10Index) {
     
     if (statItems.length >= 4) {
         // Update Published Papers (2nd stat)
-        if (publications) {
+        if (publications && publications > 0) {
             statItems[1].querySelector('h3').textContent = publications.toString();
         }
         
-        // Optionally: Replace "AWS Certifications" with "Total Citations"
+        // Update Total Citations (4th stat)
         if (citations && citations > 0) {
             statItems[3].querySelector('h3').textContent = citations.toLocaleString();
             statItems[3].querySelector('p').textContent = 'Total Citations';
-            statItems[3].title = `h-index: ${hIndex}, i10-index: ${i10Index}`;
+            statItems[3].title = `h-index: ${hIndex || 'N/A'}, i10-index: ${i10Index || 'N/A'}`;
         }
     }
 }
 
-// Alternative: Use a simpler approach with manual fallback
-async function fetchScholarStatsSimple() {
+// Fetch stats from the local JSON file (updated by GitHub Actions)
+async function fetchScholarStatsFromJSON() {
     try {
-        // Try to fetch from a JSON file that you can update periodically
         const response = await fetch('scholar-stats.json');
+        if (!response.ok) {
+            throw new Error('Failed to fetch scholar-stats.json');
+        }
         const data = await response.json();
+        console.log('Loaded Google Scholar stats from JSON:', data);
         updateStats(data.citations, data.publications, data.hIndex, data.i10Index);
+        return data;
     } catch (error) {
-        console.log('Using static values for scholar stats');
-        // Keep current static values if fetch fails
+        console.log('Could not load scholar-stats.json, using default HTML values:', error.message);
+        // HTML already has default values, so no need to do anything
+        return null;
     }
 }
 
 // Initialize Scholar Stats on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Try to fetch live data
-    fetchGoogleScholarStats();
-    
-    // Alternative: Use the simple JSON approach
-    // fetchScholarStatsSimple();
+    // Use the JSON file approach (updated daily by GitHub Actions)
+    fetchScholarStatsFromJSON();
 });
